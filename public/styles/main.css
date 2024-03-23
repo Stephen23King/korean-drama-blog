@@ -1,0 +1,96 @@
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  margin-left: 3%;
+  margin-right: 3%;
+}
+
+main {
+  flex: 1;
+}
+
+.newbg {
+  background-color: rgb(178, 220, 255)!important;
+}
+
+.customFooter {
+  font-family: Arial, Helvetica, sans-serif!important;
+  color: rgb(0, 0, 0)!important;
+}
+
+.tw {
+  margin-top: 2.1px!important;
+}
+
+/* Apply hover effect */
+.nav-pills .nav-link:hover {
+  background-color: rgb(107, 189, 255); /* Change the background color on hover */
+  color: white;
+}
+
+.nav-link {
+  color: black;
+}
+
+small {
+  font-size: 1rem;
+}
+
+h4 {
+  font-size: 1.7rem;
+}
+
+.kdramaFate {
+  height: 100%;
+  width: 100%;
+  border: 3px solid rgb(0, 24, 41);
+}
+
+.comment-container {
+  padding: 10px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.comment-box {
+  padding: 10px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.no-comment-box {
+  padding: 10px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.source {
+  font-size: 0.8rem;
+}
+
+.comment-box {
+  position: relative;
+}
+
+.comment-content {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.comment-buttons {
+  margin-top: 5px;
+}
+
+.edit-form {
+  margin-top: 10px;
+}
+
+.metadata {
+  line-height: 0.8;
+}
+
+.metadata-title {
+  font-weight: bold;
+}
