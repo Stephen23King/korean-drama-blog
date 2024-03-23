@@ -1,13 +1,144 @@
 <%- include("partials/header.ejs") %>
 
+<div class="container">
+  <!-- Image with rounded border -->
+  <img src="/images/arthdal.png" alt="Athrdal Chronicles seasons 1 and 2 image" class="rounded img-fluid kdramaPhotos" style="max-width: 100%;">
+
+  <!-- Text under the image -->
+    <h2 class="mt-3">Synposis</h2>
+
+    <p class="mt-3 synopDescrip">Kdrama Fated To Love You is a story of an ordinary girl, Mi Yeong, who has neither outstanding looks,
+      a prestigious college degree, nor any other charming qualities, facing her whole life abruptly changing when love
+      comes knocking at her door. While on vacation, she accidentally happens to spend one night with an unknown rich man
+      and even gets pregnant from that night. Because of this incident, her life will never be the same, and this fateful
+      encounter brings love that transforms this not-so-special girl to an attractive, charming lady.
+    </p>
+
+    <div class="metadata">
+    <p class="mt-3"><span class="metadata-title">Directors:</span> Kim Hee Won and Lee Dong Yoon</p>
+    <p class="mt-3"><span class="metadata-title">Released:</span> July 2, 2014</p>
+    <p class="mt-3"><span class="metadata-title">Status:</span> Completed - <span style="font-style: italic;">Season 1</span></p>
+    <p class="mt-3"><span class="metadata-title">Country / Language:</span> Korean</p>
+    <p class="mt-3"><span class="metadata-title">Genres:</span> Business; Comedy; Contract Relationship; Drama; Family; melodrama; Rich Man; Romance</p>
+    </div>
+
+    <hr>
+
+<!-- Form to create a post -->
+<h4>Add Comment</h4>
+<form action="/posts" method="POST">
+    <div class="mb-3">
+    <textarea class="form-control" id="content" name="content" rows="3" required></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Add Comment</button>
+</form>
+
+<hr>
+
+<h4>Comments</h4>
+<div class="comment-container">
+  <% if (posts.length > 0) { %>
+    <% posts.forEach((post, index) => { %>
+      <div class="comment-box" id="comment<%= index %>">
+        <div class="comment-content">
+          <p><%= post %></p>
+          <!-- Edit and Delete buttons -->
+          <div class="comment-buttons">
+            <!-- Edit button -->
+            <button class="btn btn-primary edit-btn my-1" data-index="<%= index %>">Edit</button>
+            <!-- Delete button -->
+            <form action="/delete/<%= index %>" method="POST">
+              <button type="submit" class="btn btn-danger my-1 mb-2">Delete</button>
+            </form>
+          </div>
+        </div>
+        <!-- Edit form (hidden by default) -->
+        <form class="edit-form" style="display: none;">
+          <div class="mb-3">
+            <textarea class="form-control" rows="3" required></textarea>
+          </div>
+          <!-- Cancel Edit button -->
+          <button type="button" class="btn btn-secondary cancel-edit-btn">Cancel</button>
+          <!-- Confirm Edit button -->
+          <button type="button" class="btn btn-success confirm-edit-btn">Confirm Edit</button>
+        </form>
+      </div>
+      <hr>
+    <% }); %>
+  <% } else { %>
+    <div class="no-comment-box">
+      <p>No comments yet.</p>
+    </div>
+  <% } %>
+</div>
 
 
+  
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const editButtons = document.querySelectorAll(".edit-btn");
+    editButtons.forEach(button => {
+      button.addEventListener("click", function() {
+        const index = this.getAttribute("data-index");
+        const commentBox = document.getElementById(`comment${index}`);
+        const editForm = commentBox.querySelector(".edit-form");
+        const originalContent = commentBox.querySelector("p").textContent;
+        const textarea = editForm.querySelector("textarea");
+        textarea.value = originalContent;
+        commentBox.querySelector("p").style.display = "none";
+        // Hide edit & delete buttons
+        commentBox.querySelector(".comment-buttons").style.display = "none"; 
+        editForm.style.display = "block";
+      });
+    });
 
+    const confirmEditButtons = document.querySelectorAll(".confirm-edit-btn");
+    confirmEditButtons.forEach(button => {
+      button.addEventListener("click", function() {
+        const commentBox = this.parentElement.parentElement;
+        const index = commentBox.getAttribute("id").replace("comment", "");
+        const updatedContent = commentBox.querySelector("textarea").value;
+        // Send an AJAX request to update the content
+        fetch(`/edit/${index}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ content: updatedContent })
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error("Failed to update comment.");
+          }
+          return response.json();
+        })
+        .then(data => {
+          // Update the displayed content if successful
+          commentBox.querySelector("p").textContent = updatedContent;
+          commentBox.querySelector("p").style.display = "block";
+          // Show edit & delete buttons
+          commentBox.querySelector(".comment-buttons").style.display = "block";
+          commentBox.querySelector(".edit-form").style.display = "none";
+        })
+        .catch(error => {
+          console.error("Error:", error);
+          alert("Failed to update comment.");
+        });
+      });
+    });
 
-
-
-
+    // Add event listeners for cancel edit buttons
+    const cancelEditButtons = document.querySelectorAll(".cancel-edit-btn");
+    cancelEditButtons.forEach(button => {
+      button.addEventListener("click", function() {
+        const commentBox = this.parentElement.parentElement;
+        commentBox.querySelector("p").style.display = "block";
+        commentBox.querySelector(".comment-buttons").style.display = "block"; // Show edit and delete buttons
+        commentBox.querySelector(".edit-form").style.display = "none";
+      });
+    });
+  });
+</script>
 
 
 <%- include("partials/footer.ejs") %>
-
