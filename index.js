@@ -91,7 +91,7 @@ app.put("/edit/:drama/:index", (req, res) => {
 });
 
 // Handle deleting a post
-app.post("/delete/:drama/:index", (req, res) => {
+app.delete("/delete/:drama/:index", (req, res) => {
   const { drama, index } = req.params;
   let posts;
 
@@ -112,7 +112,7 @@ app.post("/delete/:drama/:index", (req, res) => {
 
   if (index >= 0 && index < posts.length) {
     posts.splice(index, 1);
-    res.redirect(`/${drama}`);
+    res.json({ success: true, message: "Comment deleted successfully" });
   } else {
     res.status(404).json({ success: false, error: "Comment not found" });
   }

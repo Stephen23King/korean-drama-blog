@@ -48,9 +48,7 @@
             <!-- Edit button -->
             <button class="btn btn-primary edit-btn my-1" data-index="<%= index %>">Edit</button>
             <!-- Delete button -->
-            <form action="/delete/<%= index %>" method="POST">
-              <button type="submit" class="btn btn-danger my-1 mb-2">Delete</button>
-            </form>
+            <button class="btn btn-danger delete-btn my-1 mb-2" data-index="<%= index %>">Delete</button> <!-- Change form to button -->
           </div>
         </div>
         <!-- Edit form (hidden by default) -->
@@ -64,7 +62,7 @@
           <button type="button" class="btn btn-success confirm-edit-btn">Confirm Edit</button>
         </form>
       </div>
-      <hr>
+      <hr> 
     <% }); %>
   <% } else { %>
     <div class="no-comment-box">
@@ -73,8 +71,6 @@
   <% } %>
 </div>
 
-
-  
 <script>
   document.addEventListener("DOMContentLoaded", function() {
     const editButtons = document.querySelectorAll(".edit-btn");
@@ -100,7 +96,7 @@
         const index = commentBox.getAttribute("id").replace("comment", "");
         const updatedContent = commentBox.querySelector("textarea").value;
         // Send an AJAX request to update the content
-        fetch(`/edit/${index}`, {
+        fetch(`/edit/drama1/${index}`, { // Updated URL
           method: "PUT",
           headers: {
             "Content-Type": "application/json"
@@ -138,8 +134,34 @@
         commentBox.querySelector(".edit-form").style.display = "none";
       });
     });
+
+    // Add event listeners for delete buttons
+    const deleteButtons = document.querySelectorAll(".delete-btn");
+    deleteButtons.forEach(button => {
+      button.addEventListener("click", function() {
+        const index = this.getAttribute("data-index");
+        // Send an AJAX request to delete the comment
+        fetch(`/delete/drama1/${index}`, { // Updated URL
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json"
+          }
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error("Failed to delete comment.");
+          }
+          // Remove the comment box from the DOM
+          const commentBox = document.getElementById(`comment${index}`);
+          commentBox.remove(); // Remove the comment box from the DOM
+        })
+        .catch(error => {
+          console.error("Error:", error);
+          alert("Failed to delete comment.");
+        });
+      });
+    });
   });
 </script>
-
 
 <%- include("partials/footer.ejs") %>
