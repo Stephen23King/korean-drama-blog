@@ -7,9 +7,12 @@ const port = 3000;
 app.use(express.static("public"));
 app.use(bodyParser.urlencoded({ extended: true }));
 
-let drama1Posts = [];
-let drama2Posts = [];
-let drama3Posts = [];
+// Define an in-memory store for posts
+const postsStore = {
+  drama1: [],
+  drama2: [],
+  drama3: []
+};
 
 app.set('view engine', 'ejs');
 
@@ -18,15 +21,15 @@ app.get("/", (req, res) => {
 });
 
 app.get("/drama1", (req, res) => {
-  res.render("drama1", { posts: drama1Posts });
+  res.render("drama1", { posts: postsStore.drama1 });
 });
 
 app.get("/drama2", (req, res) => {
-  res.render("drama2", { posts: drama2Posts });
+  res.render("drama2", { posts: postsStore.drama2 });
 });
 
 app.get("/drama3", (req, res) => {
-  res.render("drama3", { posts: drama3Posts });
+  res.render("drama3", { posts: postsStore.drama3 });
 });
 
 app.get("/about", (req, res) => {
@@ -38,67 +41,53 @@ app.get("/contact", (req, res) => {
 });
 
 // Handle post creation for drama1
-app.post("/drama1/posts", (req, res) => {
+app.post("/drama1/posts", async (req, res) => {
   const { content } = req.body;
-  drama1Posts.push(content);
+  postsStore.drama1.push(content);
   res.redirect("/drama1");
   console.log("New post content for Drama 1:", content);
 });
 
 // Handle post creation for drama2
-app.post("/drama2/posts", (req, res) => {
+app.post("/drama2/posts", async (req, res) => {
   const { content } = req.body;
-  drama2Posts.push(content);
+  postsStore.drama2.push(content);
   res.redirect("/drama2");
   console.log("New post content for Drama 2:", content);
 });
 
 // Handle post creation for drama3
-app.post("/drama3/posts", (req, res) => {
+app.post("/drama3/posts", async (req, res) => {
   const { content } = req.body;
-  drama3Posts.push(content);
+  postsStore.drama3.push(content);
   res.redirect("/drama3");
   console.log("New post content for Drama 3:", content);
 });
 
-// Handle updating a post for drama1
-app.post("/edit/drama1/:index", (req, res) => {
-  const index = parseInt(req.params.index); // Parse index to ensure it's a number
+// Handle updating a post
+app.post("/edit/:drama/:index", async (req, res) => {
+  const { drama, index } = req.params;
   const updatedContent = req.body.content;
 
-  // Check if the index is valid and within the bounds of the drama1Posts array
-  if (!isNaN(index) && index >= 0 && index < drama1Posts.length) {
-    drama1Posts[index] = updatedContent;
-    console.log("Updated content at index " + index + ":", updatedContent);
-    res.status(200).json({ success: true, message: "Post updated successfully" });
-  } else {
-    res.status(404).json({ success: false, error: "Post not found or invalid index" });
+  let posts;
+  switch (drama) {
+    case 'drama1':
+      posts = postsStore.drama1;
+      break;
+    case 'drama2':
+      posts = postsStore.drama2;
+      break;
+    case 'drama3':
+      posts = postsStore.drama3;
+      break;
+    default:
+      res.status(400).json({ success: false, error: "Invalid drama specified" });
+      return;
   }
-});
 
-// Handle updating a post for drama2
-app.post("/edit/drama2/:index", (req, res) => {
-  const index = parseInt(req.params.index); // Parse index to ensure it's a number
-  const updatedContent = req.body.content;
-
-  // Check if the index is valid and within the bounds of the drama2Posts array
-  if (!isNaN(index) && index >= 0 && index < drama2Posts.length) {
-    drama2Posts[index] = updatedContent;
-    console.log("Updated content at index " + index + ":", updatedContent);
-    res.status(200).json({ success: true, message: "Post updated successfully" });
-  } else {
-    res.status(404).json({ success: false, error: "Post not found or invalid index" });
-  }
-});
-
-// Handle updating a post for drama3
-app.post("/edit/drama3/:index", (req, res) => {
-  const index = parseInt(req.params.index); // Parse index to ensure it's a number
-  const updatedContent = req.body.content;
-
-  // Check if the index is valid and within the bounds of the drama3Posts array
-  if (!isNaN(index) && index >= 0 && index < drama3Posts.length) {
-    drama3Posts[index] = updatedContent;
+  if (!isNaN(index) && index >= 0 && index < posts.length) {
+    // Store the updated content back into the same index
+    posts[index] = updatedContent;
     console.log("Updated content at index " + index + ":", updatedContent);
     res.status(200).json({ success: true, message: "Post updated successfully" });
   } else {
@@ -107,19 +96,19 @@ app.post("/edit/drama3/:index", (req, res) => {
 });
 
 // Handle deleting a post
-app.delete("/delete/:drama/:index", (req, res) => {
+app.delete("/delete/:drama/:index", async (req, res) => {
   const { drama, index } = req.params;
   let posts;
 
   switch (drama) {
     case 'drama1':
-      posts = drama1Posts;
+      posts = postsStore.drama1;
       break;
     case 'drama2':
-      posts = drama2Posts;
+      posts = postsStore.drama2;
       break;
     case 'drama3':
-      posts = drama3Posts;
+      posts = postsStore.drama3;
       break;
     default:
       res.status(400).json({ success: false, error: "Invalid drama specified" });
@@ -133,6 +122,7 @@ app.delete("/delete/:drama/:index", (req, res) => {
     res.status(404).json({ success: false, error: "Comment not found" });
   }
 });
+
 
 app.listen(port, () => {
     console.log(`Listening on port ${port}`);
