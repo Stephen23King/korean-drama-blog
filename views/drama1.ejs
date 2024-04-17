@@ -26,146 +26,68 @@
 
     <hr>
 
-<!-- Form to create a post -->
-<h4>Add Comment</h4>
-<form id="commentForm" action="/drama1/posts" method="POST">
-    <div class="mb-3">
-    <textarea class="form-control" id="content" name="content" rows="3" required></textarea>
-    </div>
-    <button type="submit" class="btn btn-primary">Add Comment</button>
-</form>
-
-<hr>
-
-<h4>Comments</h4>
-<div class="comment-container">
-  <% if (posts.length > 0) { %>
-    <% posts.forEach((post, index) => { %>
-      <div class="comment-box" id="comment<%= index %>">
-        <div class="comment-content">
-          <p><%= post %></p>
-          <!-- Edit and Delete buttons -->
-          <div class="comment-buttons">
-            <!-- Edit button -->
-            <button class="btn btn-primary edit-btn my-1" data-index="<%= index %>">Edit</button>
-            <!-- Delete button -->
-            <button class="btn btn-danger delete-btn my-1 mb-2" data-index="<%= index %>">Delete</button>
-          </div>
-        </div>
-        <!-- Edit form (hidden by default) -->
-        <form class="edit-form" style="display: none;">
-          <div class="mb-3">
-            <textarea class="form-control" rows="3" required><%= post %></textarea>
-          </div>
-          <!-- Cancel Edit button -->
-          <button type="button" class="btn btn-secondary cancel-edit-btn">Cancel</button>
-          <!-- Confirm Edit button -->
-          <button type="button" class="btn btn-success confirm-edit-btn">Confirm Edit</button>
-        </form>
+    <!-- Form to create a post -->
+    <h4>Add Comment</h4>
+    <form id="commentForm" action="/drama1/posts" method="POST" enctype="application/x-www-form-urlencoded">
+      <div class="mb-3">
+        <textarea class="form-control" id="content" name="content" rows="3" required></textarea>
       </div>
-      <hr> 
-    <% }); %>
-  <% } else { %>
-    <div class="no-comment-box">
-      <p>No comments yet.</p>
+      <button type="submit" class="btn btn-primary">Add Comment</button>
+    </form>
+
+    <hr>
+
+    <h4>Comments</h4>
+    <div class="comment-container">
+      <% if (locals.posts && locals.posts.length > 0) { %>
+        <% locals.posts.forEach((post, index) => { %>
+          <div class="comment-box" id="comment<%= index %>">
+            <div class="comment-content">
+              <p class="previousPost"><%= post %></p>
+              <!-- Delete button -->
+              <button class="btn btn-danger delete-btn my-1 mb-2" data-index="<%= index %>">Delete</button>
+            </div>
+          </div>
+          <hr>
+        <% }); %>
+      <% } else { %>
+        <div class="no-comment-box">
+          <p>No comments yet.</p>
+        </div>
+      <% } %>
     </div>
-  <% } %>
-</div>
+  </div>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
-  // Event listener for entire document
   document.addEventListener("DOMContentLoaded", function() {
     
-    // Edit buttons event listener
-    const editButtons = document.querySelectorAll(".edit-btn");
-    editButtons.forEach(button => {
-      button.addEventListener("click", function() {
-        const index = this.getAttribute("data-index");
-        const commentBox = document.getElementById(`comment${index}`);
-        const editForm = commentBox.querySelector(".edit-form");
-        const originalContent = commentBox.querySelector("p").textContent;
-        const textarea = editForm.querySelector("textarea");
-        textarea.value = originalContent;
-        commentBox.querySelector("p").style.display = "none";
-        // Hide edit & delete buttons
-        commentBox.querySelector(".comment-buttons").style.display = "none"; 
-        editForm.style.display = "block";
-      });
-    });
+    const contentInput = document.getElementById("content");
     
-    // Confirm Edit buttons event listener
-    const confirmEditButtons = document.querySelectorAll(".confirm-edit-btn");
-    confirmEditButtons.forEach(button => {
-      button.addEventListener("click", function() {
-        const commentBox = this.parentElement.parentElement;
-        const index = commentBox.getAttribute("id").replace("comment", "");
-        console.log("Index:", index); // Log index for debugging
-        const updatedContent = commentBox.querySelector("textarea").value;
-        console.log("Updated Content:", updatedContent); // Log updatedContent for debugging
-        // Send a POST request to update the content
-        axios.post(`/edit/drama1/${index}`, { content: updatedContent })
-          .then(response => {
-            console.log("Response Data:", response.data); // Log response data for debugging
-            // Update the displayed content if successful
-            commentBox.querySelector("p").textContent = updatedContent;
-            commentBox.querySelector("p").style.display = "block";
-            // Show edit & delete buttons
-            commentBox.querySelector(".comment-buttons").style.display = "block";
-            commentBox.querySelector(".edit-form").style.display = "none";
-          })
-          .catch(error => {
-            console.error("Error:", error);
-            alert("Failed to update comment.");
-          });
-      });
+    // Event listener for submitting the comment form
+    contentInput.addEventListener("submit", function(event) {
+      event.preventDefault();
+      const content = event.target.value;
+      console.log("Content:", content); // Log the value of content
+      axios.post("/drama1/posts", { content })
+        .then(response => {
+          console.log("Comment added successfully: ", content);
+        })
+        .catch(error => {
+          console.error("Error:", error);
+          alert("Failed to add comment.");
+        });
     });
 
-    // Cancel Edit buttons event listener
-    const cancelEditButtons = document.querySelectorAll(".cancel-edit-btn");
-    cancelEditButtons.forEach(button => {
-      button.addEventListener("click", function() {
-        const commentBox = this.parentElement.parentElement;
-        commentBox.querySelector("p").style.display = "block";
-        commentBox.querySelector(".comment-buttons").style.display = "block"; // Show edit and delete buttons
-        commentBox.querySelector(".edit-form").style.display = "none";
-      });
-    });
-
-    // Delete buttons event listener
+    // Event listener for deleting a comment
     const deleteButtons = document.querySelectorAll(".delete-btn");
     deleteButtons.forEach(button => {
       button.addEventListener("click", function() {
         const index = this.getAttribute("data-index");
-        // Send a DELETE request to delete the comment
         axios.delete(`/delete/drama1/${index}`)
           .then(response => {
-            console.log("Response Data:", response.data); // Log response data for debugging
-
-            // Remove the comment box from the DOM
-            const commentBox = document.getElementById(`comment${index}`);
-            const hrElement = commentBox.nextElementSibling; // Get the <hr> element following the comment
-            commentBox.remove(); // Remove the comment box from the DOM
-
-            // Remove the <hr> element if it exists
-            if (hrElement && hrElement.tagName === "HR") {
-              hrElement.remove();
-            }
-
-            // Update indexes for remaining comments
-            const remainingComments = document.querySelectorAll(".comment-box");
-            remainingComments.forEach((comment, i) => {
-            const currentIndex = comment.getAttribute("id").replace("comment", "");
-              if (parseInt(currentIndex) > parseInt(index)) {
-                comment.setAttribute("id", `comment${i}`);
-                comment.querySelector(".edit-btn").setAttribute("data-index", i);
-                comment.querySelector(".delete-btn").setAttribute("data-index", i);
-              }
-          });
-
-          console.log("Comment deleted."); // Log message
-            
+            window.location.reload(); // Reload the page to reflect the deletion
           })
           .catch(error => {
             console.error("Error:", error);
